@@ -17,6 +17,7 @@ async function run() {
     try {
         const serviceCollection = client.db("carDoctor").collection("services");
         const productCollection = client.db("carDoctor").collection("products");
+        const teamMembers = client.db("carDoctor").collection("team");
         
         // API for services
         app.get('/services', async (req, res)=>{
@@ -31,6 +32,15 @@ async function run() {
         app.get('/products', async (req, res)=>{
             const query = {};
             const cursor = productCollection.find(query);
+            const result = await cursor.toArray();
+
+            res.send(result);
+        })
+        
+        // API for team
+        app.get('/team', async (req, res)=>{
+            const query = {};
+            const cursor = teamMembers.find(query);
             const result = await cursor.toArray();
 
             res.send(result);

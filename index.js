@@ -19,7 +19,7 @@ async function run() {
         const productCollection = client.db("carDoctor").collection("products");
         const teamMembers = client.db("carDoctor").collection("team");
         
-        // API for services
+        // API for reading services data
         app.get('/services', async (req, res)=>{
             const query = {};
             const cursor = serviceCollection.find(query);
@@ -35,7 +35,7 @@ async function run() {
             res.send(result);
         })
         
-        // API for products
+        // API for reading products data
         app.get('/products', async (req, res)=>{
             const query = {};
             const cursor = productCollection.find(query);
@@ -44,12 +44,19 @@ async function run() {
             res.send(result);
         })
         
-        // API for team
+        // API for reading team data
         app.get('/team', async (req, res)=>{
             const query = {};
             const cursor = teamMembers.find(query);
             const result = await cursor.toArray();
 
+            res.send(result);
+        })
+
+        // API for reading team data
+        app.post('/services', async (req, res)=>{
+            const doc = req.body;
+            const result = await serviceCollection.insertOne(doc);
             res.send(result);
         })
     }

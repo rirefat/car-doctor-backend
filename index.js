@@ -60,6 +60,13 @@ async function run() {
             res.send(result);
         })
 
+        // API for posting product data
+        app.post('/products', async(req,res)=>{
+            const doc = req.body;
+            const result = await productCollection.insertOne(doc);
+            res.send(result);
+        })
+
         // API for deleting single service data
         app.delete('/services/:id', async (req,res)=>{
             const id = req.params.id;

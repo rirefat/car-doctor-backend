@@ -53,11 +53,21 @@ async function run() {
             res.send(result);
         })
 
-        // API for reading team data
+        // API for posting service data
         app.post('/services', async (req, res)=>{
             const doc = req.body;
             const result = await serviceCollection.insertOne(doc);
             res.send(result);
+        })
+
+        // API for deleting single service data
+        app.delete('/services/:id', async (req,res)=>{
+            const id = req.params.id;
+            console.log(id)
+            const query = { _id: new ObjectId(id) };
+            const result = await serviceCollection.deleteOne(query);
+            res.send(result);
+            console.log("deleted")
         })
     }
     finally {

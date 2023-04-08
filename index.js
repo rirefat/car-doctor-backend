@@ -44,6 +44,14 @@ async function run() {
 
             res.send(result);
         })
+        
+        app.get('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {_id: new ObjectId(id)};
+            const result = await productCollection.findOne(query);
+
+            res.send(result);
+        })
 
         // API for reading team data
         app.get('/team', async (req, res) => {
@@ -106,6 +114,25 @@ async function run() {
             const result = await serviceCollection.updateOne(filter, updateDoc, options);
             res.send(result);
             console.log("Service data is updated");
+        })
+        
+        // API for updating single product data
+        app.put('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const product = req.body;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    name: product.name, 
+                    description: product.description,
+                    price: product.price,
+                    img: product.img
+                }
+            };
+            const result = await productCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+            console.log("Product data is updated");
         })
     }
     finally {

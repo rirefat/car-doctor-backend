@@ -18,9 +18,10 @@ async function run() {
         const serviceCollection = client.db("carDoctor").collection("services");
         const productCollection = client.db("carDoctor").collection("products");
         const teamMembers = client.db("carDoctor").collection("team");
-        
+
+        //===================================================== GET API SECTION =====================================================
         // API for reading services data
-        app.get('/services', async (req, res)=>{
+        app.get('/services', async (req, res) => {
             const query = {};
             const cursor = serviceCollection.find(query);
             const result = await cursor.toArray();
@@ -28,24 +29,24 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/services/:id', async(req, res)=>{
+        app.get('/services/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await serviceCollection.findOne(query);
             res.send(result);
         })
-        
+
         // API for reading products data
-        app.get('/products', async (req, res)=>{
+        app.get('/products', async (req, res) => {
             const query = {};
             const cursor = productCollection.find(query);
             const result = await cursor.toArray();
 
             res.send(result);
         })
-        
+
         // API for reading team data
-        app.get('/team', async (req, res)=>{
+        app.get('/team', async (req, res) => {
             const query = {};
             const cursor = teamMembers.find(query);
             const result = await cursor.toArray();
@@ -53,28 +54,58 @@ async function run() {
             res.send(result);
         })
 
+        //===================================================== POST API SECTION =====================================================
         // API for posting service data
-        app.post('/services', async (req, res)=>{
+        app.post('/services', async (req, res) => {
             const doc = req.body;
             const result = await serviceCollection.insertOne(doc);
             res.send(result);
         })
 
         // API for posting product data
-        app.post('/products', async(req,res)=>{
+        app.post('/products', async (req, res) => {
             const doc = req.body;
             const result = await productCollection.insertOne(doc);
             res.send(result);
         })
 
+        //===================================================== DELETE API SECTION =====================================================
         // API for deleting single service data
-        app.delete('/services/:id', async (req,res)=>{
+        app.delete('/services/:id', async (req, res) => {
             const id = req.params.id;
-            console.log(id)
             const query = { _id: new ObjectId(id) };
             const result = await serviceCollection.deleteOne(query);
             res.send(result);
-            console.log("deleted")
+            console.log("Service deleted")
+        })
+
+        // API for deleting single product data
+        app.delete('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await productCollection.deleteOne(query);
+            res.send(result);
+            console.log("Product Deleted")
+        })
+
+        //===================================================== UPDATE API SECTION =====================================================
+        // API for updating single service data
+        app.put('/services/:id', async (req, res) => {
+            const id = req.params.id;
+            const service = req.body;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    name: service.name, 
+                    description: service. description,
+                    price: service.price,
+                    img: service.img
+                }
+            };
+            const result = await serviceCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+            console.log("Service data is updated");
         })
     }
     finally {

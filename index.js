@@ -79,6 +79,11 @@ async function run() {
         // API for reading orders data
         app.get('/orders', async (req,res)=>{
             let query = {};
+            if(req.query.email){
+                query = {
+                    order_email: req.query.email
+                }
+            }
             const cursor = orderCollection.find(query);
             const result = await cursor.toArray();
             res.send(result);

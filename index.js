@@ -60,7 +60,6 @@ async function run() {
             const query = {};
             const cursor = teamMembers.find(query);
             const result = await cursor.toArray();
-
             res.send(result);
         })
 
@@ -73,6 +72,14 @@ async function run() {
                 }
             }
             const cursor = cartCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        // API for reading orders data
+        app.get('/orders', async (req,res)=>{
+            let query = {};
+            const cursor = orderCollection.find(query);
             const result = await cursor.toArray();
             res.send(result);
         })
@@ -101,7 +108,10 @@ async function run() {
 
         // API for posting order data
         app.post('/orders', async (req, res)=>{
-            
+            const doc = req.body;
+            const result = await orderCollection.insertOne(doc);
+            res.send(result);
+            console.log("confirm order")
         })
        
 

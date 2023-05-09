@@ -1,6 +1,7 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
+var jwt = require('jsonwebtoken');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -9,6 +10,22 @@ const port = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Function to verify JWT token 
+const verifyJWT = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send({ message: "Unauthorized Access" });
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.SECRET_TOKEN, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ message: "Unauthorized Access" });
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.d7wzr9v.mongodb.net/?retryWrites=true&w=majority`;
@@ -66,8 +83,8 @@ async function run() {
         // API for reading cart data
         app.get('/cart', async (req, res) => {
             let query = {};
-            if(req.query.email){
-                query ={
+            if (req.query.email) {
+                query = {
                     order_email: req.query.email
                 }
             }
@@ -77,9 +94,13 @@ async function run() {
         })
 
         // API for reading orders data
-        app.get('/orders', async (req,res)=>{
+        app.get('/orders', verifyJWT, async (req, res) => {
+            const decoded = req.decoded;
+            if (decoded.email !== req.query.email) {
+                res.status(401).send({ message: "Unauthorized Access" });
+            }
             let query = {};
-            if(req.query.email){
+            if (req.query.email) {
                 query = {
                     order_email: req.query.email
                 }
@@ -112,13 +133,13 @@ async function run() {
         })
 
         // API for posting order data
-        app.post('/orders', async (req, res)=>{
+        app.post('/orders', async (req, res) => {
             const doc = req.body;
             const result = await orderCollection.insertOne(doc);
             res.send(result);
             console.log("confirm order")
         })
-       
+
 
         //===================================================== DELETE API SECTION =====================================================
         // API for deleting single service data
@@ -140,18 +161,18 @@ async function run() {
         })
 
         // API for deleting single cart item
-        app.delete('/cart/:id', async(req, res)=>{
+        app.delete('/cart/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const result = await cartCollection.deleteOne(query)
             res.send(result);
             console.log("deleted one item from cart")
         })
 
         // API for deleting all items from cart
-        app.delete('/cart', async (req,res)=>{
+        app.delete('/cart', async (req, res) => {
             const email = req.query.email;
-            const query = {order_email: {$regex: email}}
+            const query = { order_email: { $regex: email } }
             const result = await cartCollection.deleteMany(query);
             res.send(result);
             console.log("cart clear")
@@ -194,6 +215,13 @@ async function run() {
             const result = await productCollection.updateOne(filter, updateDoc, options);
             res.send(result);
             console.log("Product data is updated");
+        })
+
+        // API for JSON Web Token
+        app.post('/jwt', async (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.SECRET_TOKEN, { expiresIn: '5h'});
+            res.send({ token })
         })
     }
     finally {
